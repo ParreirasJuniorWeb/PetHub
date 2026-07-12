@@ -167,7 +167,6 @@ export default function CheckoutPage() {
     prevStep,
     setAddress,
     setCartItems,
-    paymentMethod,
     processPayment,
     goToStep,
   } = useCheckout();
