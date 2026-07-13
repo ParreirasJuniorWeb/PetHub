@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
     ChevronRight,
@@ -19,6 +19,14 @@ import { useProducts } from '../../hooks/useProducts';
 import { useCart } from '../../contexts/useCart';
 import { Button } from '../../components/common/Button';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../contexts/useAuth';
+import {
+    addFavorite,
+    getLocalFavorites,
+    isFavorite as isFavoriteRemote,
+    removeFavorite,
+    toggleLocalFavorite
+} from '../../services/favorites';
 
 const ProductDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -27,6 +35,7 @@ const ProductDetail = () => {
     const { product, loading, error } = useProduct(id || '');
     const { products: relatedProducts } = useProducts();
     const { addItemCart } = useCart();
+    const { user } = useAuth();
 
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
@@ -55,6 +64,51 @@ const ProductDetail = () => {
 
     const incrementQuantity = () => setQuantity((prev) => prev + 1);
     const decrementQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
+
+    useEffect(() => {
+        let active = true;
+
+        const syncFavoriteState = async () => {
+            if (!product) return;
+
+            if (user?.uid) {
+                const remoteState = await isFavoriteRemote(user.uid, product.id);
+                if (active) setIsFavorite(remoteState);
+                return;
+            }
+
+            const localState = getLocalFavorites().some((item) => item.id === product.id);
+            if (active) setIsFavorite(localState);
+        };
+
+        void syncFavoriteState();
+
+        return () => {
+            active = false;
+        };
+    }, [product, user?.uid]);
+
+    const handleToggleFavorite = async () => {
+        if (!product) return;
+
+        if (user?.uid) {
+            if (isFavorite) {
+                await removeFavorite(user.uid, product.id);
+                setIsFavorite(false);
+                toast.success('Removido dos favoritos.');
+                return;
+            }
+
+            await addFavorite(user.uid, product);
+            setIsFavorite(true);
+            toast.success('Adicionado aos favoritos.');
+            return;
+        }
+
+        const { active } = toggleLocalFavorite(product);
+        setIsFavorite(active);
+        toast.success(active ? 'Adicionado aos favoritos.' : 'Removido dos favoritos.');
+    };
 
     // Imagens do produto (fallback para image única)
     const images = product?.images?.length ? product.images : [product?.image].filter(Boolean);
@@ -327,7 +381,7 @@ const ProductDetail = () => {
                                 <Button
                                     variant="outline"
                                     size="lg"
-                                    onClick={() => setIsFavorite(!isFavorite)}
+                                    onClick={handleToggleFavorite}
                                 >
                                     <Heart
                                         className={`w-5 h-5 ${isFavorite ? 'fill-current text-red-500' : ''

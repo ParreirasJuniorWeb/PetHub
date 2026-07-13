@@ -1,42 +1,80 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
+import { Heart, ShoppingCart, Trash2, Loader2 } from 'lucide-react';
 import { useCart } from '../../contexts/useCart';
+import { useAuth } from '../../contexts/useAuth';
 import type { Product } from '../../types';
-
-const FAVORITES_STORAGE_KEY = 'pethub:favorites';
-
-function readFavorites(): Product[] {
-  try {
-    const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as Product[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeFavorites(items: Product[]) {
-  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(items));
-}
+import {
+  getLocalFavorites,
+  getUserFavorites,
+  removeFavorite as removeFavoriteRemote,
+  setLocalFavorites,
+} from '../../services/favorites';
 
 export default function Favorites() {
-  const [favorites, setFavorites] = useState<Product[]>(() => readFavorites());
+  const { user } = useAuth();
   const { addItemCart } = useCart();
   const navigate = useNavigate();
 
+  const [favorites, setFavorites] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadFavorites = async () => {
+      setLoading(true);
+      try {
+        if (user?.uid) {
+          const remoteFavorites = await getUserFavorites(user.uid);
+          if (active) setFavorites(remoteFavorites);
+        } else if (active) {
+          setFavorites(getLocalFavorites());
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void loadFavorites();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.uid]);
+
   const hasFavorites = useMemo(() => favorites.length > 0, [favorites]);
 
-  const removeFavorite = (productId: string) => {
+  const removeFavorite = async (productId: string) => {
+    if (user?.uid) {
+      await removeFavoriteRemote(user.uid, productId);
+      setFavorites((prev) => prev.filter((item) => item.id !== productId));
+      return;
+    }
+
     const next = favorites.filter((item) => item.id !== productId);
     setFavorites(next);
-    writeFavorites(next);
+    setLocalFavorites(next);
   };
 
   const handleAddToCart = (product: Product) => {
     addItemCart(product);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-neutral-light py-8 w-full">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+            <div className="flex items-center justify-center py-16 gap-3 text-gray-600">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Carregando favoritos...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-light py-8 w-full">

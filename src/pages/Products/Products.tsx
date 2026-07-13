@@ -9,14 +9,23 @@ import {
     Loader2,
     Grid2X2,
     Grid3X3,
-    Package
+    Package,
+    Heart
 } from 'lucide-react';
 import { useProducts } from '../../hooks/useProducts';
 import { useCart } from '../../contexts/useCart';
 import { Button } from '../../components/common/Button';
 import type { Product } from '../../types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../contexts/useAuth';
+import {
+    addFavorite,
+    getLocalFavorites,
+    getUserFavorites,
+    removeFavorite,
+    toggleLocalFavorite
+} from '../../services/favorites';
 
 // Categorias disponíveis
 const categories = [
@@ -48,6 +57,8 @@ const Products = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
 
     const { addItemCart } = useCart();
+    const { user } = useAuth();
+    const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
     // Hook de produtos com filtros
     const { products, loading, error, total } = useProducts({
@@ -83,6 +94,51 @@ const Products = () => {
         e.preventDefault();
         addItemCart(product);
         toast.success("Produto adicionado ao carrinho.");
+    };
+
+    useEffect(() => {
+        let active = true;
+
+        const loadFavorites = async () => {
+            if (user?.uid) {
+                const favorites = await getUserFavorites(user.uid);
+                if (active) setFavoriteIds(favorites.map((item) => item.id));
+                return;
+            }
+
+            const local = getLocalFavorites();
+            if (active) setFavoriteIds(local.map((item) => item.id));
+        };
+
+        void loadFavorites();
+
+        return () => {
+            active = false;
+        };
+    }, [user?.uid]);
+
+    const handleToggleFavorite = async (product: Product, e: React.MouseEvent) => {
+        e.preventDefault();
+
+        const isActive = favoriteIds.includes(product.id);
+
+        if (user?.uid) {
+            if (isActive) {
+                await removeFavorite(user.uid, product.id);
+                setFavoriteIds((prev) => prev.filter((id) => id !== product.id));
+                toast.success('Removido dos favoritos.');
+                return;
+            }
+
+            await addFavorite(user.uid, product);
+            setFavoriteIds((prev) => [...prev, product.id]);
+            toast.success('Adicionado aos favoritos.');
+            return;
+        }
+
+        const { next, active } = toggleLocalFavorite(product);
+        setFavoriteIds(next.map((item) => item.id));
+        toast.success(active ? 'Adicionado aos favoritos.' : 'Removido dos favoritos.');
     };
 
     // Loading state
@@ -300,6 +356,15 @@ const Products = () => {
                                                 className="p-2 bg-white rounded-full text-neutral-dark hover:text-primary transition-colors"
                                             >
                                                 <ShoppingCart className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleToggleFavorite(product, e)}
+                                                className="p-2 bg-white rounded-full text-neutral-dark hover:text-primary transition-colors"
+                                            >
+                                                <Heart
+                                                    className={`w-5 h-5 ${favoriteIds.includes(product.id) ? 'fill-current text-red-500' : ''
+                                                        }`}
+                                                />
                                             </button>
                                         </div>
                                     </div>
