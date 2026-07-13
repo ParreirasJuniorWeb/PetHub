@@ -26,8 +26,9 @@
 
 - [ ] 9) Correções finais de checkout + pedidos pagos + Home catálogo
   - [x] Corrigir erro Firestore de campo `paymentMethod` undefined
-  - [ ] Garantir gravação de pedidos apenas após pagamento confirmado (`status: paid`)
+  - [x] Garantir gravação de pedidos conforme regra de pagamento (aprovado ou pendente para PIX/Boleto)
   - [ ] Criar página/rota de histórico de pedidos pagos
+  - [ ] Criar página/rota de produtos favoritos
   - [x] Refatorar Home com ações de catálogo (ver produto, adicionar carrinho)
   - [x] Adicionar filtros na Home por categoria e faixa de preço
 

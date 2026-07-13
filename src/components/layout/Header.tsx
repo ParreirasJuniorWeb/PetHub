@@ -29,11 +29,11 @@ const Header = () => {
                         <Link to="/products" className="text-neutral-dark hover:text-primary transition-colors">
                             Produtos
                         </Link>
-                        <Link to="/services" className="text-neutral-dark hover:text-primary transition-colors">
-                            Serviços
+                        <Link to="/orders" className="text-neutral-dark hover:text-primary transition-colors">
+                            Pedidos
                         </Link>
-                        <Link to="/contact" className="text-neutral-dark hover:text-primary transition-colors">
-                            Contato
+                        <Link to="/favorites" className="text-neutral-dark hover:text-primary transition-colors">
+                            Favoritos
                         </Link>
                     </nav>
 
@@ -82,11 +82,11 @@ const Header = () => {
                         <Link to="/products" className="block text-neutral-dark hover:text-primary">
                             Produtos
                         </Link>
-                        <Link to="/services" className="block text-neutral-dark hover:text-primary">
-                            Serviços
+                        <Link to="/orders" className="block text-neutral-dark hover:text-primary">
+                            Pedidos
                         </Link>
-                        <Link to="/contact" className="block text-neutral-dark hover:text-primary">
-                            Contato
+                        <Link to="/favorites" className="block text-neutral-dark hover:text-primary">
+                            Favoritos
                         </Link>
                     </div>
                 </div>

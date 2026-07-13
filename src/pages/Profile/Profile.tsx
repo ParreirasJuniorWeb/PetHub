@@ -262,9 +262,9 @@ export function Profile() {
                                     <p className="text-gray-500 mb-6">
                                         Que tal fazer sua primeira compra?
                                     </p>
-                                    <Link to="/products">
+                                    <Link to="/orders">
                                         <Button variant="primary">
-                                            Ver produtos
+                                            Acompanhar pedidos
                                         </Button>
                                     </Link>
                                 </div>
@@ -283,9 +283,14 @@ export function Profile() {
                                     <h3 className="text-lg font-medium text-neutral-dark mb-2">
                                         Nenhum favorito ainda
                                     </h3>
-                                    <p className="text-gray-500">
+                                    <p className="text-gray-500 mb-6">
                                         Salve seus produtos favoritos para ver mais tarde
                                     </p>
+                                    <Link to="/favorites">
+                                        <Button variant="primary">
+                                            Ver favoritos
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
                         )}

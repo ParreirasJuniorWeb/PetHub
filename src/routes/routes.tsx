@@ -10,6 +10,8 @@ import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 import ErrorRoutes from "../pages/ErrorRoutes/ErrorRoutes";
 import { Profile } from "../pages/Profile/Profile";
+import Orders from "../pages/Orders/Orders";
+import Favorites from "../pages/Favorites/Favorites";
 
 // Layout
 import { Layout } from "../layout/layout";
@@ -75,6 +77,22 @@ export const router = createBrowserRouter([
                 element: (
                     <PrivateRoute>
                         <Profile />
+                    </PrivateRoute>
+                ),
+            },
+            {
+                path: "/orders",
+                element: (
+                    <PrivateRoute>
+                        <Orders />
+                    </PrivateRoute>
+                ),
+            },
+            {
+                path: "/favorites",
+                element: (
+                    <PrivateRoute>
+                        <Favorites />
                     </PrivateRoute>
                 ),
             },
