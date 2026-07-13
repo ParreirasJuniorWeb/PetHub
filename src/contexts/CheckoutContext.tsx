@@ -43,17 +43,32 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         setCurrentStep(checkoutSteps.indexOf(newStep));
     }, []);
 
-    const processPayment = useCallback(async () => {
+    const processPayment = useCallback(async (params?: {
+        paymentMethod?: 'card' | 'pix' | 'boleto';
+        paymentStatus?: 'approved' | 'pending';
+    }) => {
         try {
             if (!address || !cartItems.length) {
                 return { success: false, error: 'Dados incompletos' };
+            }
+
+            const selectedMethod = params?.paymentMethod ?? paymentMethod ?? null;
+            const selectedStatus = params?.paymentStatus ?? (selectedMethod === 'card' ? 'approved' : 'pending');
+
+            const shouldPersistOrder =
+                selectedStatus === 'approved' ||
+                selectedMethod === 'pix' ||
+                selectedMethod === 'boleto';
+
+            if (!shouldPersistOrder) {
+                return { success: false, error: 'Pagamento não confirmado para registro do pedido.' };
             }
 
             const subtotal = cartItems.reduce((sum, item) => sum + item.total, 0);
             const shipping = subtotal >= 199 ? 0 : 15.90;
             const total = subtotal + shipping;
 
-            const orderId = await createOrder({
+            const orderPayload: Parameters<typeof createOrder>[0] = {
                 userId: userData?.uid ?? '',
                 items: cartItems.map((item) => ({
                     productId: item.id,
@@ -67,11 +82,16 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
                 shipping,
                 discount: 0,
                 total,
-                status: 'pending',
-                paymentMethod: paymentMethod ?? undefined,
-                paymentStatus: 'pending',
+                status: selectedStatus === 'approved' ? 'processing' : 'pending',
+                paymentStatus: selectedStatus,
                 shippingAddress: address,
-            });
+            };
+
+            if (selectedMethod) {
+                orderPayload.paymentMethod = selectedMethod;
+            }
+
+            const orderId = await createOrder(orderPayload);
 
             goToStep('confirmation');
             return { success: true, orderId };

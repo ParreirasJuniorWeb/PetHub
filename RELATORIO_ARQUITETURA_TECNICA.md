@@ -7,7 +7,8 @@ Este documento descreve a arquitetura técnica do projeto **PetHub**, com foco e
 - padrões adotados,
 - boas práticas de clean code e padronização,
 - fluxos de processamento e dados,
-- modelos/diagramas representativos para entendimento e manutenção.
+- modelos/diagramas representativos para entendimento e manutenção,
+- atualização das últimas entregas em checkout/pedidos e Home.
 
 ---
 
@@ -155,10 +156,11 @@ sequenceDiagram
     FE->>FN: Solicita PaymentIntent (amount/orderId)
     FN->>ST: stripe.paymentIntents.create(...)
     ST-->>FN: client_secret + payment_intent
-    FN-->>FE: clientSecret
-    FE->>FE2: stripe.confirmPayment(...)
-    FE2-->>FE: status (succeeded/processing/requires_action)
-    FE->>DB: registra/atualiza pedido
+    FN-->>FE: clientSecret + paymentIntentId
+    FE->>FE2: elements.submit + stripe.confirmPayment(...)
+    FE2-->>FE: status final/intermediário
+    FE->>FN: confirmPayment (validação de status)
+    FE->>DB: registra pedido conforme regra de persistência
 ```
 
 ## 4.5 Fluxo webhook Stripe (confirmação assíncrona)
@@ -255,11 +257,30 @@ sequenceDiagram
 1. Checkout calcula valor total e metadados.
 2. Frontend chama `createPaymentIntent` (Cloud Function).
 3. Function valida input/auth e cria PaymentIntent no Stripe.
-4. Function retorna `clientSecret`.
-5. Frontend confirma o pagamento via Stripe.js/Elements.
-6. Status é exibido e pedido é persistido/atualizado.
+4. Function retorna `clientSecret` e `paymentIntentId`.
+5. Frontend valida elementos (`elements.submit`) e confirma pagamento via Stripe.js/Elements.
+6. Frontend chama `confirmPayment` para confirmar status antes da persistência do pedido.
 
-## 7.3 Fluxo de confirmação assíncrona via webhook
+## 7.3 Regra de persistência de pedidos (atualizada)
+
+A persistência de pedido no Firestore foi ajustada para refletir a regra de negócio:
+
+- **Cartão aprovado:**  
+  - `paymentStatus: 'approved'`  
+  - `status: 'processing'` (mapeamento compatível com o tipo atual `OrderStatus`)
+
+- **PIX/Boleto aguardando compensação:**  
+  - `paymentStatus: 'pending'`  
+  - `status: 'pending'`  
+  - `paymentMethod` preservado (`pix`/`boleto`)
+
+- **Pagamento não elegível/sem confirmação:**  
+  - pedido **não é persistido**.
+
+Além disso:
+- o payload evita campos `undefined` (incluindo `paymentMethod`) para manter compatibilidade com validação do Firestore.
+
+## 7.4 Fluxo de confirmação assíncrona via webhook
 
 1. Stripe envia evento para `stripeWebhook`.
 2. Function valida assinatura do evento.
@@ -269,36 +290,58 @@ sequenceDiagram
 
 ---
 
-## 8) Qualidade, testes e observabilidade
+## 8) Atualizações recentes de frontend (Home)
 
-## 8.1 Qualidade e testes
+Arquivo principal atualizado: `src/pages/Home/Home.tsx`.
 
-- Testes unitários frontend com Vitest.
-- Testes unitários de Functions com Jest/ts-jest.
-- Build e lint como gate técnico.
+Funcionalidades adicionadas:
+- vitrine de produtos com dados reais,
+- ação de **adicionar ao carrinho** diretamente na Home,
+- navegação para **detalhes do produto**,
+- filtros por **categoria** e **faixa de preço**,
+- estados de carregamento, erro e resultado vazio.
 
-## 8.2 Observabilidade (estado atual e evolução)
+Impacto arquitetural:
+- Home passa a atuar como ponto de entrada comercial com comportamento próximo ao catálogo,
+- reaproveitamento de hooks/contextos existentes (`useProducts`, `useCart`),
+- menor fricção no funil de compra (descoberta -> ação).
+
+---
+
+## 9) Qualidade, testes e observabilidade
+
+## 9.1 Qualidade e testes
+
+Executado:
+- **Build de produção** com sucesso (`npm run build`), sem erros de TypeScript.
+- validação funcional das novas regras e funcionalidades com confirmação do usuário.
+
+Observação:
+- warning de bundle grande do Vite (não bloqueante):
+  - recomendada otimização por code splitting/lazy loading.
+
+## 9.2 Observabilidade (estado atual e evolução)
 
 Estado atual:
 - logs básicos para depuração local/emulador.
 
 Recomendado:
 - padronização de logs estruturados (JSON),
-- correlação por `requestId/orderId`,
+- correlação por `requestId/orderId/paymentIntentId`,
 - painel de métricas (falhas de auth/pagamento/webhook),
 - alertas para erros críticos de pagamento.
 
 ---
 
-## 9) Riscos técnicos e mitigação
+## 10) Riscos técnicos e mitigação
 
 1. **Exposição de segredo em frontend**
    - Mitigação: segredo apenas em Functions/Secret Manager.
 
-2. **Inconsistência de estado de pagamento**
-   - Mitigação: webhook assinado + reconciliação por status.
+2. **Inconsistência de status financeiro x pedido**
+   - Mitigação: webhook assinado + reconciliação por status + regra de persistência condicional.
 
-3. **Cobertura de teste insuficiente para E2E**
+3. **Cobertura de teste insuficiente para E2E completo**
    - Mitigação: expandir para testes E2E automatizados (Playwright/Cypress).
 
 4. **Bundle grande**
@@ -306,11 +349,12 @@ Recomendado:
 
 ---
 
-## 10) Recomendações e roadmap arquitetural
+## 11) Recomendações e roadmap arquitetural
 
 ## Curto prazo
-- concluir thorough testing E2E (UI completa + OAuth real + Stripe sandbox),
-- reforçar validações de endpoint e cenários de erro,
+- criar página de histórico de pedidos pagos/pendentes por usuário,
+- consolidar validações de método de pagamento no domínio,
+- concluir thorough testing automatizado (UI + integrações Stripe sandbox),
 - consolidar lint/build/testes em pipeline CI.
 
 ## Médio prazo
@@ -325,13 +369,14 @@ Recomendado:
 
 ---
 
-## 11) Conclusão
+## 12) Conclusão
 
 A arquitetura do PetHub está alinhada com práticas modernas de aplicações full-stack JavaScript/TypeScript:
 - frontend modular e tipado,
 - backend serverless para regras sensíveis,
 - integração segura com Stripe,
 - autenticação social robusta,
-- base de testes e documentação técnica em evolução contínua.
+- regras de persistência de pedidos aderentes ao status real de pagamento,
+- Home evoluída para experiência de catálogo e conversão.
 
-Com as melhorias propostas no roadmap, o projeto evolui para um nível sólido de produção e portfólio técnico de alto valor para posicionamento profissional full-stack júnior.
+Com as melhorias propostas no roadmap, o projeto avança para um nível sólido de produção e portfólio técnico de alto valor para posicionamento profissional full-stack júnior.

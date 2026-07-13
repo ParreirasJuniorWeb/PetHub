@@ -25,7 +25,10 @@ export interface CheckoutContextType {
     nextStep: () => void;
     prevStep: () => void;
     goToStep: (step: 'cart' | 'info' | 'payment' | 'payment_stripe' | 'confirmation') => void;
-    processPayment: () => Promise<{ success: boolean; orderId?: string; error?: string }>;
+    processPayment: (params?: {
+        paymentMethod?: 'card' | 'pix' | 'boleto';
+        paymentStatus?: 'approved' | 'pending';
+    }) => Promise<{ success: boolean; orderId?: string; error?: string }>;
     clearCheckout: () => void;
 }
 

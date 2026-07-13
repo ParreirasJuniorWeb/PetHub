@@ -24,6 +24,13 @@
   - [ ] Executar build e validar compilação
   - [ ] Validar fluxo de checkout (cartão, PIX e boleto)
 
+- [ ] 9) Correções finais de checkout + pedidos pagos + Home catálogo
+  - [x] Corrigir erro Firestore de campo `paymentMethod` undefined
+  - [ ] Garantir gravação de pedidos apenas após pagamento confirmado (`status: paid`)
+  - [ ] Criar página/rota de histórico de pedidos pagos
+  - [x] Refatorar Home com ações de catálogo (ver produto, adicionar carrinho)
+  - [x] Adicionar filtros na Home por categoria e faixa de preço
+
 - [ ] 8) Correção de deploy Firebase Functions (produção)
   - [ ] Atualizar `functions/package.json` para `firebase-functions@latest`
   - [ ] Migrar `functions/src/index.ts` para API v2 com secrets por função

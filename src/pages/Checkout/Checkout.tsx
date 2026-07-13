@@ -346,7 +346,7 @@ export default function CheckoutPage() {
 
   if (step === 'payment') {
     const handlePaymentSucceeded = async () => {
-      const result = await processPayment();
+      const result = await processPayment({ paymentMethod: 'card', paymentStatus: 'approved' });
       if (result.success) {
         handleSuccessToast();
         clearCart();
