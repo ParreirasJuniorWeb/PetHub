@@ -78,6 +78,12 @@ function StripePaymentForm({
     setSubmitError(null);
 
     try {
+      const { error: submitElementsError } = await elements.submit();
+      if (submitElementsError) {
+        setSubmitError(submitElementsError.message || 'Não foi possível validar os dados de pagamento.');
+        return;
+      }
+
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         clientSecret,
