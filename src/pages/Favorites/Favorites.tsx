@@ -22,14 +22,21 @@ export default function Favorites() {
   useEffect(() => {
     let active = true;
 
+    const normalizeId = (value: unknown): string =>
+      String(value ?? '')
+        .trim()
+        .toLowerCase();
+
     const loadFavorites = async () => {
       setLoading(true);
       try {
         if (user?.uid) {
           const remoteFavorites = await getUserFavorites(user.uid);
-          if (active) setFavorites(remoteFavorites);
+          const normalizedRemote = remoteFavorites.filter((item) => normalizeId(item.id));
+          if (active) setFavorites(normalizedRemote);
         } else if (active) {
-          setFavorites(getLocalFavorites());
+          const localFavorites = getLocalFavorites().filter((item) => normalizeId(item.id));
+          setFavorites(localFavorites);
         }
       } finally {
         if (active) setLoading(false);

@@ -26,6 +26,8 @@ import {
     removeFavorite,
     toggleLocalFavorite
 } from '../../services/favorites';
+import { db } from '../../services/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 // Categorias disponíveis
 const categories = [
@@ -120,25 +122,48 @@ const Products = () => {
     const handleToggleFavorite = async (product: Product, e: React.MouseEvent) => {
         e.preventDefault();
 
-        const isActive = favoriteIds.includes(product.id);
-
-        if (user?.uid) {
-            if (isActive) {
-                await removeFavorite(user.uid, product.id);
-                setFavoriteIds((prev) => prev.filter((id) => id !== product.id));
-                toast.success('Removido dos favoritos.');
-                return;
-            }
-
-            await addFavorite(user.uid, product);
-            setFavoriteIds((prev) => [...prev, product.id]);
-            toast.success('Adicionado aos favoritos.');
+        const safeId = String(product?.id ?? '').trim().toLowerCase();
+        if (!safeId) {
+            toast.error('Produto inválido para favoritar.');
             return;
         }
 
-        const { next, active } = toggleLocalFavorite(product);
-        setFavoriteIds(next.map((item) => item.id));
-        toast.success(active ? 'Adicionado aos favoritos.' : 'Removido dos favoritos.');
+        const isActive = favoriteIds.map((id) => String(id).trim().toLowerCase()).includes(safeId);
+
+        try {
+            if (user?.uid) {
+                if (isActive) {
+                    await removeFavorite(user.uid, safeId);
+                    setFavoriteIds((prev) =>
+                        prev.filter((id) => String(id).trim().toLowerCase() !== safeId)
+                    );
+                    toast.success('Removido dos favoritos.');
+                    return;
+                }
+
+                await addFavorite(user.uid, { ...product, id: safeId });
+
+                const snapshot = await getDocs(collection(db, 'users', user.uid, 'favorites'));
+                const refreshedIds = snapshot.docs.map((d) => d.id);
+                setFavoriteIds(refreshedIds);
+
+                toast.success('Adicionado aos favoritos.');
+                return;
+            }
+
+            const { next, active } = toggleLocalFavorite({ ...product, id: safeId });
+            setFavoriteIds(next.map((item) => String(item.id).trim().toLowerCase()));
+            toast.success(active ? 'Adicionado aos favoritos.' : 'Removido dos favoritos.');
+        } catch (err) {
+            console.error('Erro ao alternar favorito:', err);
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : typeof err === 'object' && err !== null && 'code' in err
+                        ? String((err as { code?: string }).code)
+                        : 'Erro desconhecido';
+            toast.error(`Não foi possível atualizar favorito. (${message})`);
+        }
     };
 
     // Loading state
