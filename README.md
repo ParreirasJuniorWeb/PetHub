@@ -252,6 +252,22 @@ Contribuições são bem-vindas! Para contribuir:
 
 ---
 
+## 🤖 Desenvolvimento Assistido por IA
+
+Durante o desenvolvimento deste projeto utilizei ferramentas de Inteligência Artificial como apoio em atividades específicas, tais como:
+
+- brainstorming de soluções
+- revisão de código
+- geração de testes
+- documentação
+- sugestões de refatoração
+
+Toda a arquitetura da aplicação, definição das regras de negócio, integração entre serviços, revisão do código e validação dos resultados foram realizadas por mim.
+
+A IA foi utilizada como ferramenta de produtividade, e não como substituta das decisões de engenharia.
+
+---
+
 ## 📝 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
