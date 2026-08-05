@@ -266,11 +266,43 @@ Toda a arquitetura da aplicação, definição das regras de negócio, integraç
 
 A IA foi utilizada como ferramenta de produtividade, e não como substituta das decisões de engenharia.
 
+Fui responsável por:
+
+✅ definição dos requisitos
+
+✅ modelagem da aplicação
+
+✅ organização da arquitetura
+
+✅ integração entre Firebase e Stripe
+
+✅ implementação dos fluxos
+
+✅ validação das regras de negócio
+
+✅ depuração dos erros
+
+✅ revisão de todo o código antes do deploy
+
+Acredito que IA é uma excelente ferramenta de produtividade, mas não substitui conhecimento técnico, senso crítico e responsabilidade na construção de software.
+
 ---
 
 ## 📝 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
+
+## Filosofia de desenvolvimento
+
+>> Este projeto foi desenvolvido utilizando ferramentas modernas de engenharia de software, incluindo Inteligência Artificial como apoio para brainstorming, revisão de código, documentação e testes.
+
+>> Todas as decisões relacionadas à arquitetura, implementação, regras de negócio, integração entre serviços, validação e publicação da aplicação foram conduzidas por mim.
+
+### filosofia pessoal
+
+>> Acredito que Inteligência Artificial é uma excelente ferramenta de produtividade para desenvolvimento de software, mas considero que compreender o problema, tomar decisões técnicas, validar regras de negócio e garantir a qualidade da solução continuam sendo responsabilidades do desenvolvedor.
 
 ---
 
