@@ -225,7 +225,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 - [x] Carrinho de compras
 - [x] Vitrine de produtos
 - [x] Perfil do usuário
-- [ ] Sistema de pagamento (Stripe/PayPal)
+- [x] Sistema de pagamento (Stripe/PayPal)
 - [ ] Avaliações e comentários
 - [ ] Notificações por email
 - [ ] Dashboard administrativo
@@ -296,13 +296,13 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 ## Filosofia de desenvolvimento
 
->> Este projeto foi desenvolvido utilizando ferramentas modernas de engenharia de software, incluindo Inteligência Artificial como apoio para brainstorming, revisão de código, documentação e testes.
+> Este projeto foi desenvolvido utilizando ferramentas modernas de engenharia de software, incluindo Inteligência Artificial como apoio para brainstorming, revisão de código, documentação e testes.
 
->> Todas as decisões relacionadas à arquitetura, implementação, regras de negócio, integração entre serviços, validação e publicação da aplicação foram conduzidas por mim.
+> Todas as decisões relacionadas à arquitetura, implementação, regras de negócio, integração entre serviços, validação e publicação da aplicação foram conduzidas por mim.
 
 ### filosofia pessoal
 
->> Acredito que Inteligência Artificial é uma excelente ferramenta de produtividade para desenvolvimento de software, mas considero que compreender o problema, tomar decisões técnicas, validar regras de negócio e garantir a qualidade da solução continuam sendo responsabilidades do desenvolvedor.
+> Acredito que Inteligência Artificial é uma excelente ferramenta de produtividade para desenvolvimento de software, mas considero que compreender o problema, tomar decisões técnicas, validar regras de negócio e garantir a qualidade da solução continuam sendo responsabilidades do desenvolvedor.
 
 ---
 
